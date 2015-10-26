@@ -2,10 +2,8 @@
 Spatial relations between countries and  between another geographical standards
 
 ## Data
-
-Data comes from multiple sources as follows.
-
-* [country-codes](https://github.com/datasets/country-codes): the main dataset, where *ISO 3166-1* data is organized and other standard codes can be related to *Alpha-1* codes.
+This project is  a "[country-codes](https://github.com/datasets/country-codes) derivative",  where *ISO 3166-1* data is a base information, and all CSV files can be [joined](https://en.wikipedia.org/wiki/Join_(SQL)) by *Alpha-2* codes.
+Data of this project comes from multiple sources as follows.
 
 * [Standard mundi map](http://wiki.okfn.org/Datasets_preparation/Country-code_derivatives#Standard_mundi_map): the choice of geographical data, that is also organized by *ISO 3166-1 Alpha-1* country codes. 
 
@@ -43,9 +41,9 @@ them create the *mundi* view, as main map:
 ```sql
 CREATE VIEW mundi AS
      SELECT iso_a2, st_Area(geom) as area, geom 
-     FROM ne10m_units WHERE iso_a2!='-99' -- no ocean
+     FROM ne10m_units WHERE iso_a2!='-99' -- all iso-alpha2 defined
      UNION
-     SELECT iso_a2, st_Area(geom) as area, geom 
+     SELECT iso_a2, st_Area(geom) as area, geom  -- the few remained countries
      FROM ne10m_countries WHERE iso_a2 NOT IN (SELECT iso_a2 FROM ne10m_units)
 ; -- area for simplify area-factor calculations in next steps
 ```
