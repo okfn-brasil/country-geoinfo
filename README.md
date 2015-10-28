@@ -114,7 +114,7 @@ CREATE TABLE UTM_zone_lists_out1 AS
 The source preparation used [enviroprojects.org/geospatial-services/gis-resources global-utm-zones](http://www.enviroprojects.org/geospatial-services/gis-resources/global-utm-zones/view).
 Each country is under one or more cells of the UTM-grid, that is the main standard to describe contry territory in a local-planar projection. See [Utm-zones.jpg](https://upload.wikimedia.org/wikipedia/commons/e/ed/Utm-zones.jpg).
 
-To list only "relevant" UTM cells, as we see in a coarse map (ex. and ignoring small islands), a "area factor" must be noted, 
+To list only "relevant" UTM cells, as we [see in a coarse map](http://earth-info.nga.mil/GandG/coordsys/grids/utm_1km_polyline_dloads.html) (ex. and ignoring small islands), a "area factor" must be noted, 
 
 ```sql
 CREATE VIEW UTM_zone_lists2 AS
