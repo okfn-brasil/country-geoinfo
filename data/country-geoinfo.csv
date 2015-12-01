@@ -1,4 +1,4 @@
-country,neighbor_list,list_len,centr_lat,centr_long,UTMgrid_cells
+country,neighbor_list,list_len,centr_lat,centr_long,UTM_grid_cells
 AD,ES FR,2,1.561736,42.536035,31T
 AE,OM SA,2,55.137115,24.352618,39Q 40Q 39R 40R
 AF,CN IR PK TJ TM UZ,6,65.177836,33.932827,41R 42R 41S 42S 43S
