@@ -21,18 +21,18 @@ mkdir sandbox
 cd sandbox
 wget -c http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_map_units.zip
 unzip ne_10m_admin_0_map_units.zip
-shp2pgsql -s 4326 ne_10m_admin_0_map_units  public.ne10m_units | psql -h localhost -U postgres sandbox
+shp2pgsql -G -s 4326 ne_10m_admin_0_map_units  public.ne10m_units | psql -h localhost -U postgres sandbox
 rm *.*
 # get secondary mundi map, witn all ~240 countries
 wget -c http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/cultural/ne_10m_admin_0_countries.zip
 unzip ne_10m_admin_0_countries.zip
-shp2pgsql -s 4326 ne_10m_admin_0_countries  public.ne10m_countries | psql -h localhost -U postgres sandbox
+shp2pgsql -G -s 4326 ne_10m_admin_0_countries  public.ne10m_countries | psql -h localhost -U postgres sandbox
 rm *.*
 # get UTM Zones
 mkdir utm_zones;  cd utm_zones
 wget -c http://www.enviroprojects.org/geospatial-services/gis-resources/global-utm-zones/at_download/file -O global-utm-zones.zip
 unzip global-utm-zones.zip
-shp2pgsql  -s 4326 utm_zones_final.dbf public.utm_zones | psql -h localhost -U postgres sandbox
+shp2pgsql -G -s 4326 utm_zones_final.dbf public.utm_zones | psql -h localhost -U postgres sandbox
 rm *.*
 
 psql -h localhost -U postgres sandbox
@@ -40,50 +40,98 @@ psql -h localhost -U postgres sandbox
 them create the *mundi* view, as main map:
 ```sql
 CREATE VIEW mundi AS
-     SELECT iso_a2, st_Area(geom) as area, geom 
+     SELECT iso_a2, st_Area(geog,true) as area, geog 
      FROM ne10m_units WHERE iso_a2!='-99' -- all iso-alpha2 defined
      UNION
-     SELECT iso_a2, st_Area(geom) as area, geom  -- the few remained countries
+     SELECT iso_a2, st_Area(geog,true) as area, geog  -- the few remained countries
      FROM ne10m_countries WHERE iso_a2 NOT IN (SELECT iso_a2 FROM ne10m_units)
 ; -- area for simplify area-factor calculations in next steps
 ```
+For data analysis, each preparation CSV can be isolated in an intermediary output. Example, isolating UTM_zones:
+```shell
+psql -h localhost -U postgres sandbox -c "
+  COPY (SELECT * FROM UTM_zone_lists_out) TO '/tmp/utm_zones.csv' WITH CSV HEADER
+"
+```
+for final output, check final JOIN. 
+
 ### Country neighbors
 ```sql
 CREATE VIEW neighbors AS
   WITH pairs AS (
     SELECT m.iso_a2 as a, scan.iso_a2 AS b
     FROM mundi AS m INNER JOIN mundi AS scan
-         ON ST_DWithin(m.geom, scan.geom, 0.0001)
-    WHERE m.gid>scan.gid
+         ON ST_DWithin(m.geog, scan.geog, 100)
+    WHERE m.iso_a2>scan.iso_a2
     ORDER BY 1, 2
-  ) 
+  )
   SELECT a as iso_a2, array_agg(b) AS neighbor_list
-  FROM (
+  FROM ( -- original and commutative pairs 
     SELECT a, b FROM pairs  UNION  SELECT b, a FROM pairs 
   ) t
   GROUP BY 1 ORDER BY 1;
+  
+CREATE TABLE neighbors_out AS 
+    SELECT iso_a2, 
+           array_to_string(neighbor_list, ' ') as neighbor_list, 
+           array_length(neighbor_list,1) AS list_len 
+    FROM neighbors;
 ```
-`psql -h localhost -U postgres sandbox -c "SELECT *, array_length(neighbor_list,1) as list_len FROM neighbors"`
+
+### Area
+In km<sup>2</sup>, using spheroid,
+```sql
+SELECT iso_a2, (area*1e-6)::int from mundi where iso_a2!='-99' order by 1;
+```
 
 ### Centroid
+Cast to geometry is not precise (in geometries as RU), but result is razoable
 ```sql
-    SELECT iso_a2, st_astext(ST_PointOnSurface(geom)) as centroid -- long lat
-    FROM mundi ORDER BY 1;
+  WITH cs AS (
+   SELECT iso_a2, ST_Centroid(geog::geometry) as c
+   FROM mundi ORDER BY 1
+  ) SELECT iso_a2, ST_XMax(c) as cnt_lat, ST_YMax(c) as cnt_lon;
 ```
 
 ### UTM references
 Antartica (AQ) have [this special definition](http://portal.uni-freiburg.de/AntSDI/standardsspecifications/refsystemandprojections/projections/utm.gif/image_view_fullscreen).
 
 ```sql
-CREATE VIEW UTM_references AS
-    SELECT  m.iso_a2, array_agg(u.code) AS utm_codes
+CREATE VIEW UTM_zone_lists AS
+    SELECT  m.iso_a2, array_agg(u.code) AS utm_zones
     FROM utm_zones u INNER JOIN mundi m 
-      ON (m.geom && u.geom AND st_intersects(m.geom,u.geom))
+      ON (m.geog && u.geog AND st_intersects(m.geog,u.geog))
     WHERE u.code!='AQ' -- Antartica have separate def.
     GROUP BY 1 ORDER BY 1
  ;
+CREATE TABLE UTM_zone_lists_out1 AS 
+    SELECT iso_a2, 
+           array_to_string(utm_zones, ' ') as UTMgrid_cells, 
+           array_length(utm_zones,1) AS list_len
+    FROM UTM_zone_lists;
 ```
-`psql -h localhost -U postgres sandbox -c "SELECT *, array_length(utm_codes,1) AS list_len FROM UTM_references"`
 
 The source preparation used [enviroprojects.org/geospatial-services/gis-resources global-utm-zones](http://www.enviroprojects.org/geospatial-services/gis-resources/global-utm-zones/view).
 Each country is under one or more cells of the UTM-grid, that is the main standard to describe contry territory in a local-planar projection. See [Utm-zones.jpg](https://upload.wikimedia.org/wikipedia/commons/e/ed/Utm-zones.jpg).
+
+To list only "relevant" UTM cells, as we [see in a coarse map](http://earth-info.nga.mil/GandG/coordsys/grids/utm_1km_polyline_dloads.html) (ex. and ignoring small islands), a "area factor" must be noted, 
+
+```sql
+CREATE VIEW UTM_zone_lists2 AS
+  WITH izones AS (
+    SELECT  m.iso_a2, u.code as zone, u.area, st_area(st_intersection(m.geog,u.geog)) as ia
+    FROM utm_zones u INNER JOIN mundi m 
+      ON (m.geog && u.geog AND st_intersects(m.geog,u.geog))
+    WHERE u.code!='AQ' -- Antartica have separate def.
+  ) SELECT iso_a2, array_agg(zone) AS utm_zones
+    FROM izones
+    WHERE (100*area/ia)::int>0 -- minimal of 1% in area factor
+    GROUP BY 1 ORDER BY 1
+ ;
+ 
+CREATE TABLE UTM_zone_lists_out2 AS 
+    SELECT iso_a2, 
+           array_to_string(utm_zones, ' ') as UTMgrid_cells, 
+           array_length(utm_zones,1) AS list_len
+    FROM UTM_zone_lists2;
+```
