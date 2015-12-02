@@ -1,0 +1,90 @@
+{
+  "name": "country-geoinfo",
+  "title": "Spatial relations between countries and between another geographical standards",
+  "description": "Complement of country-codes dataset, offers neighbor list of each country,  list of UTM grid cells covering the contry, and other  geographical information.",
+  "format": "csv",
+  "datapackage_version": "0-beta.4",
+  "last_updated": "2015-10-25",
+  "licenses": [
+    {
+      "type": "ODC-PDDL-1.0",
+      "url": "http://opendatacommons.org/licenses/pddl/1.0/"
+    }
+  ],
+  "sources": [
+    {
+      "name": "International Organization for Standardization",
+      "web": "http://www.iso.org/iso/country_codes/iso_3166_code_lists.htm"
+    },
+    {
+      "name": "UTM zones from enviroprojects.org",
+      "web": "http://www.enviroprojects.org/geospatial-services/gis-resources/global-utm-zones/view"
+    },
+    {
+      "name": "Standard mundi verctor map, with ISO 3166-1 country codes, as Natural Earth",
+      "web": "http://www.naturalearthdata.com"
+    }
+  ],
+  "resources": [
+    {
+      "url": "https://raw.githubusercontent.com/okfn-brasil/country-geoinfo/master/data/country-geoinfo.csv",
+      "path": "data/country-geoinfo.csv",
+      "schema": {
+        "fields": [
+          {				
+            "name": "country",
+            "description": "Alpha-2 codes from ISO 3166-1",
+            "type": "string"
+          },
+          {
+            "name": "neighbor_list",
+            "description": "Space separated list of the contry's neighbors; islands have no neighbor.",
+            "type": "string"
+          },
+          {
+            "name": "list_len",
+            "description": "Length of the neighbor_list",
+            "type": "string"
+          },
+          {
+            "name": "centr_lat",
+            "description": "Country's centroid, latitude.",
+            "type": "float"
+          },
+          {
+            "name": "centr_long",
+            "description": "Country's centroid, latitude",
+            "type": "string"
+          },
+          {
+            "name": "UTM_grid_cells",
+            "description": "Space separated list of the contry's UTM cells.",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "url": "https://raw.githubusercontent.com/okfn-brasil/country-geoinfo/master/data/territoryContainment.csv",
+      "path": "data/territoryContainment.csv",
+      "schema": {
+        "fields": [
+          {				
+            "name": "type,",
+            "description": "Standard code of a superset or set of contries.",
+            "type": "string"
+          },
+          {
+            "name": "contains",
+            "description": "Space separated list of the type's (spatially) contained items.",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ],
+  "maintainers":[{
+    "name": "Peter Krauss",
+    "web": "https://github.com/okfn-brasil/country-geoinfo"
+  }]
+}
