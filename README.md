@@ -7,9 +7,9 @@ Data of this project comes from multiple sources as follows.
 
 * [Standard mundi map](http://wiki.okfn.org/Datasets_preparation/Country-code_derivatives#Standard_mundi_map): the choice of geographical data, that is also organized by *ISO 3166-1 Alpha-1* country codes. 
 
-* *UTM zones* from [enviroprojects.org/geospatial-services/gis-resources global-utm-zones](http://www.enviroprojects.org/geospatial-services/gis-resources/global-utm-zones/view)
+* *UTM zones* from [enviroprojects.org/geospatial-services/gis-resources global-utm-zones](http://www.enviroprojects.org/geospatial-services/gis-resources/global-utm-zones/view).
  
-* *Territory containment* from CLDR-tr35, describing standard geographical agregators as European Union (EU) or Soth America (005).
+* *Territory containment* from [CLDR](http://www.unicode.org/cldr/charts/28/supplemental/territory_containment_un_m_49.html) and [primay source at un.org](http://unstats.un.org/unsd/methods/m49/m49regin.htm), describing standard geographical agregators as European Union (EU) or Soth America (005).  Updated at a [friendly spreadsheet](https://docs.google.com/spreadsheets/d/15zt6TS8jZps11tUvX14BqmnErMl4xFMzhpDMldDde2Q/edit?usp=sharing).
 
 
 ## Preparation

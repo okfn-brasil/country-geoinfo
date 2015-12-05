@@ -23,15 +23,20 @@
     {
       "name": "Standard mundi verctor map, with ISO 3166-1 country codes, as Natural Earth",
       "web": "http://www.naturalearthdata.com"
+    },
+    {
+      "name": "Composition of macro geographical (continental) regions, geographical sub-regions, and selected economic and other groupings",
+      "web": "http://unstats.un.org/unsd/methods/m49/m49regin.htm"
     }
   ],
   "resources": [
     {
-      "url": "https://raw.githubusercontent.com/okfn-brasil/country-geoinfo/master/data/country-geoinfo.csv",
+      "name": "country-geoinfo",
       "path": "data/country-geoinfo.csv",
+      "url": "https://raw.githubusercontent.com/okfn-brasil/country-geoinfo/master/data/country-geoinfo.csv",
       "schema": {
         "fields": [
-          {				
+          {
             "name": "country",
             "description": "Alpha-2 codes from ISO 3166-1",
             "type": "string"
@@ -65,13 +70,19 @@
       }
     },
     {
-      "url": "https://raw.githubusercontent.com/okfn-brasil/country-geoinfo/master/data/territoryContainment.csv",
+      "name": "territoryContainment",
       "path": "data/territoryContainment.csv",
+      "url": "https://raw.githubusercontent.com/okfn-brasil/country-geoinfo/master/data/territoryContainment.csv",
       "schema": {
         "fields": [
-          {				
+          {
             "name": "type,",
             "description": "Standard code of a superset or set of contries.",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "description": "Name of the group or the macro geographical (continental) region.",
             "type": "string"
           },
           {
