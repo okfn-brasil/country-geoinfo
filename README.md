@@ -5,7 +5,7 @@ Spatial relations between countries and  between another geographical standards
 This project is  a "[country-codes](https://github.com/datasets/country-codes) derivative",  where *ISO 3166-1* data is a base information, and all CSV files can be [joined](https://en.wikipedia.org/wiki/Join_(SQL)) by *Alpha-2* codes.
 Data of this project comes from multiple sources as follows.
 
-* [Standard mundi map](http://wiki.okfn.org/Datasets_preparation/Country-code_derivatives#Standard_mundi_map): the choice of geographical data, that is also organized by *ISO 3166-1 Alpha-1* country codes. 
+* [Standard mundi map](http://wiki.okfn.org/Datasets_preparation/Country-code_derivatives#Standard_mundi_map): the choice of geographical data, that is also organized by *ISO 3166-1 Alpha-1* country codes. Neighbors of each country are inferred by [standard ST_Touches](https://en.wikipedia.org/wiki/DE-9IM#Standards) concept.
 
 * *UTM zones* from [enviroprojects.org/geospatial-services/gis-resources global-utm-zones](http://www.enviroprojects.org/geospatial-services/gis-resources/global-utm-zones/view).
  
